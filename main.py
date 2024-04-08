@@ -39,7 +39,7 @@ def upload_file():
         result_from_det = function(video_path ,video_path2)
         print(result_from_det)
 
-        # Get video information
+        
         video_info = {
             'name': file.filename,
             'size': f"{os.path.getsize(video_path) / (1024):.2f} KB",
