@@ -1,4 +1,4 @@
-import cv2
+import cv2  # Import OpenCV library
 import numpy as np
 from facenet_pytorch import MTCNN, InceptionResnetV1
 from torchvision.transforms import functional as F
@@ -9,32 +9,32 @@ def run(video_path , video_path2):
     start_time = time.time()
 
     # Equivalents for deepfake detection
-    threshold_face_similarity = 0.99
-    threshold_frames_for_deepfake = 15
+    threshold_face_similarity = 0.99  # Threshold for face similarity
+    threshold_frames_for_deepfake = 15  # Threshold frames for deepfake detection
 
     mtcnn = MTCNN()
     facenet_model = InceptionResnetV1(pretrained='vggface2').eval()
-    cap = cv2.VideoCapture(video_path)
+    cap = cv2.VideoCapture(video_path)  # Start reading the video
     frame_count = 0
-    fps = int(cap.get(cv2.CAP_PROP_FPS))
-    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    fourcc = cv2.VideoWriter_fourcc(*'H264')
-    out = cv2.VideoWriter(video_path2, fourcc, fps, (width, height))
+    fps = int(cap.get(cv2.CAP_PROP_FPS))  # Get the frame rate
+    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))  # Get the width of the video
+    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))  # Get the height of the video
+    fourcc = cv2.VideoWriter_fourcc(*'H264')  # Output video codec
+    out = cv2.VideoWriter(video_path2, fourcc, fps, (width, height))  # Set up video output
 
     deepfake_count = 0
     deep_fake_frame_count = 0
     previous_face_encoding = None
-    frames_between_processing = int(fps / 7)
-    resize_dim = (80, 80)
+    frames_between_processing = int(fps / 7)  # Number of frames between processing
+    resize_dim = (80, 80)  # Resize dimensions
 
-    while cap.isOpened():
-        ret, frame = cap.read()
-        if not ret:
+    while cap.isOpened():  # Run the loop while the video is open
+        ret, frame = cap.read()  # Read the next frame
+        if not ret:  # If the frame cannot be read, break the loop
             break
 
         if frame_count % frames_between_processing == 0:
-            boxes, _ = mtcnn.detect(frame)
+            boxes, _ = mtcnn.detect(frame)  # Detect faces
 
             if boxes is not None and len(boxes) > 0:
                 box = boxes[0].astype(int)
@@ -67,21 +67,20 @@ def run(video_path , video_path2):
                     previous_face_encoding = current_face_encoding
 
         frame_count += 1
-        out.write(frame)
+        out.write(frame)  # Write the new frame to the video
 
     end_time = time.time()
     execution_time = end_time - start_time
 
     print(f"Total Execution Time: {execution_time} seconds")
 
-    cap.release()
-    out.release()
+    cap.release()  # Release the video file
+    out.release()  # Release the output video file
 
-    accuracy = (deep_fake_frame_count / frame_count) * 1000
+    accuracy = (deep_fake_frame_count / frame_count) * 1000  # Calculate accuracy
 
-    if accuracy>100:
-        accuracy = 95
+    if accuracy > 100:
+        accuracy = 95  # Cap accuracy if it exceeds 100
 
     return int(accuracy)
 
-    
